@@ -8,6 +8,6 @@ export const baseApi = createApi({
     baseUrl,
     credentials: "include",
   }),
-  tagTypes: [],
+  tagTypes: ["Auth"],
   endpoints: () => ({}),
 });
