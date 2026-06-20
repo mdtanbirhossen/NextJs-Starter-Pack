@@ -1,10 +1,22 @@
+type RegisterBody = {
+    email?: string;
+    password?: string;
+};
+
 export async function POST(request: Request) {
     try {
-        console.log("Received registration request");
+        const body = (await request.json()) as RegisterBody;
+
+        if (!body.email || !body.password) {
+            return Response.json(
+                { message: "Email and password are required." },
+                { status: 400 }
+            );
+        }
 
         const user = {
             id: "123",
-            email: "test@example.com"
+            email: body.email
         };
 
         const response = {

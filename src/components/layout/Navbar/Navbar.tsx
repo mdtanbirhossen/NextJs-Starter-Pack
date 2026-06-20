@@ -1,118 +1,164 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, PanelsTopLeft, X } from "lucide-react";
 
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/language-provider";
+import type { TranslationKey } from "@/i18n/translations";
 
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
-    description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
-  },
-  {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
-    description:
-      "For sighted users to preview content available behind a link.",
-  },
-  {
-    title: "Progress",
-    href: "/docs/primitives/progress",
-    description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-  },
-  {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
-  },
-  {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  },
-  {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-  },
-]
+type NavItem = {
+  href: string;
+  label: TranslationKey;
+};
+
+const navItems: NavItem[] = [
+  { href: "/", label: "home" },
+  { href: "/#features", label: "features" },
+  { href: "/#pricing", label: "pricing" },
+  { href: "/#about", label: "about" },
+  { href: "/#contact", label: "contact" },
+];
 
 export function Navbar() {
+  const pathname = usePathname();
+  const { t } = useLanguage();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="w-96">
-              <ListItem href="/docs" title="Introduction">
-                Re-usable components built with Tailwind CSS.
-              </ListItem>
-              <ListItem href="/docs/installation" title="Installation">
-                How to install dependencies and structure your app.
-              </ListItem>
-              <ListItem href="/docs/primitives/typography" title="Typography">
-                Styles for headings, paragraphs, lists...etc
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem className="hidden md:flex">
-          <NavigationMenuTrigger>Components</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-2 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-              {components.map((component) => (
-                <ListItem
-                  key={component.title}
-                  title={component.title}
-                  href={component.href}
-                >
-                  {component.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/docs">Docs</Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
-  )
+    <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 font-semibold tracking-normal"
+          aria-label={t("brandName")}
+        >
+          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <PanelsTopLeft className="size-5" aria-hidden="true" />
+          </span>
+          <span className="text-base">{t("brandName")}</span>
+        </Link>
+
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.href}
+              href={item.href}
+              isActive={item.href === "/" && pathname === "/"}
+            >
+              {t(item.label)}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="hidden items-center gap-2 md:flex">
+          <LanguageSwitcher />
+          <Button variant="ghost" asChild>
+            <Link href="/login">{t("login")}</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/signup">{t("signup")}</Link>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-navigation"
+            onClick={() => setIsMenuOpen((current) => !current)}
+          >
+            {isMenuOpen ? (
+              <X className="size-4" aria-hidden="true" />
+            ) : (
+              <Menu className="size-4" aria-hidden="true" />
+            )}
+            <span className="sr-only">
+              {isMenuOpen ? t("closeMenu") : t("openMenu")}
+            </span>
+          </Button>
+        </div>
+      </div>
+
+      {isMenuOpen && (
+        <div
+          id="mobile-navigation"
+          className="border-t border-border bg-background md:hidden"
+        >
+          <nav
+            className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6"
+            aria-label="Mobile primary"
+          >
+            {navItems.map((item) => (
+              <MobileNavLink
+                key={item.href}
+                href={item.href}
+                isActive={item.href === "/" && pathname === "/"}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t(item.label)}
+              </MobileNavLink>
+            ))}
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border pt-4">
+              <Button variant="outline" asChild>
+                <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                  {t("login")}
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
+                  {t("signup")}
+                </Link>
+              </Button>
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
 }
 
-function ListItem({
-  title,
-  children,
+function NavLink({
   href,
+  isActive,
+  className,
   ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
+}: React.ComponentProps<typeof Link> & { isActive?: boolean }) {
   return (
-    <li {...props}>
-      <NavigationMenuLink asChild>
-        <Link href={href}>
-          <div className="flex flex-col gap-1 text-sm">
-            <div className="leading-none font-medium">{title}</div>
-            <div className="line-clamp-2 text-muted-foreground">{children}</div>
-          </div>
-        </Link>
-      </NavigationMenuLink>
-    </li>
-  )
+    <Link
+      href={href}
+      className={cn(
+        "inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        isActive && "bg-muted text-foreground",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function MobileNavLink({
+  href,
+  isActive,
+  className,
+  ...props
+}: React.ComponentProps<typeof Link> & { isActive?: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex h-10 items-center rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        isActive && "bg-muted text-foreground",
+        className
+      )}
+      {...props}
+    />
+  );
 }
